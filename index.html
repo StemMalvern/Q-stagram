@@ -10,9 +10,21 @@
 :root { --navy:#002744; --purple:#9a258f; --white:#ffffff; --body-bg:#ffffff; --surface:#f5f5f5; --border:#e0e0e0; --text:#1a1a1a; --muted:#777; --story-ring:linear-gradient(135deg,#002744 0%,#9a258f 100%); }
 body { font-family:'DM Sans',sans-serif; background:var(--body-bg); color:var(--text); min-height:100vh; overflow-x:hidden; display:flex; flex-direction:column; }
 nav { position:fixed; top:0; left:0; right:0; z-index:200; background:var(--navy); height:62px; display:flex; align-items:center; justify-content:space-between; padding:0 36px; box-shadow:0 2px 12px rgba(0,39,68,0.18); }
-.nav-logo { font-family:'Playfair Display',serif; font-size:24px; font-weight:700; color:var(--white); letter-spacing:-0.5px; user-select:none; }
+.nav-logo { font-family:'Playfair Display',serif; font-size:24px; font-weight:700; color:var(--white); letter-spacing:-0.5px; user-select:none; cursor:pointer; }
 .nav-logo span { font-style:italic; font-weight:400; color:#c8a0c4; }
 .nav-right { display:flex; align-items:center; gap:8px; }
+
+/* Search bar styles */
+.search-wrapper { position:relative; display:flex; align-items:center; }
+.search-input { background:rgba(255,255,255,0.12); border:1.5px solid rgba(255,255,255,0.25); border-radius:6px; color:#fff; font-family:'DM Sans',sans-serif; font-size:13px; font-weight:400; padding:7px 36px 7px 12px; width:200px; outline:none; transition:background .2s,border-color .2s,width .3s; }
+.search-input::placeholder { color:rgba(255,255,255,0.45); }
+.search-input:focus { background:rgba(255,255,255,0.18); border-color:rgba(255,255,255,0.5); width:240px; }
+.search-icon-btn { position:absolute; right:8px; background:none; border:none; cursor:pointer; color:rgba(255,255,255,0.6); display:flex; align-items:center; padding:0; transition:color .2s; }
+.search-icon-btn:hover { color:#fff; }
+.search-icon-btn svg { width:15px; height:15px; stroke:currentColor; fill:none; stroke-width:2; }
+.search-error { position:absolute; top:calc(100% + 8px); left:0; right:0; background:#fff; border:1px solid #f0c0c0; border-radius:6px; padding:8px 12px; font-size:12px; color:#c0392b; white-space:nowrap; box-shadow:0 4px 12px rgba(0,0,0,0.12); z-index:300; display:none; }
+.search-error.visible { display:block; }
+
 .nav-btn { display:flex; align-items:center; gap:7px; padding:7px 16px; border-radius:6px; font-family:'DM Sans',sans-serif; font-size:13px; font-weight:500; cursor:pointer; border:1.5px solid rgba(255,255,255,0.35); background:transparent; color:rgba(255,255,255,0.85); transition:background .2s,border-color .2s,color .2s; text-decoration:none; }
 .nav-btn:hover { background:rgba(255,255,255,0.12); border-color:rgba(255,255,255,0.6); color:#fff; }
 .nav-btn.primary { background:var(--purple); border-color:var(--purple); color:#fff; }
@@ -130,6 +142,11 @@ nav { position:fixed; top:0; left:0; right:0; z-index:200; background:var(--navy
 .story-tap-area { position:absolute; top:0; bottom:0; width:40%; cursor:pointer; z-index:5; }
 .story-tap-prev { left:0; }
 .story-tap-next { right:0; }
+
+/* Page transition */
+#mainPage, #jimPage { transition: opacity 0.3s ease; }
+#jimPage { display:none; }
+
 footer { background:var(--navy); color:rgba(255,255,255,0.55); text-align:center; padding:28px 20px; font-size:12px; font-weight:300; letter-spacing:0.3px; }
 footer .footer-logo { font-family:'Playfair Display',serif; font-size:18px; color:var(--white); margin-bottom:10px; display:block; }
 footer .footer-logo span { font-style:italic; color:#c8a0c4; font-weight:400; }
@@ -144,13 +161,22 @@ footer .footer-accent { display:inline-block; width:32px; height:2px; background
 </head>
 <body>
 <nav>
-  <div class="nav-logo">Q<span>-Stagram</span></div>
+  <div class="nav-logo" onclick="goHome()">Q<span>-Stagram</span></div>
   <div class="nav-right">
-    <button class="nav-btn"><svg viewBox="0 0 24 24"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>Search</button>
+    <div class="search-wrapper">
+      <input class="search-input" type="text" id="searchInput" placeholder="Search users..." autocomplete="off" autocorrect="off" spellcheck="false">
+      <button class="search-icon-btn" onclick="doSearch()" aria-label="Search">
+        <svg viewBox="0 0 24 24"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+      </button>
+      <div class="search-error" id="searchError">No user found.</div>
+    </div>
     <button class="nav-btn"><svg viewBox="0 0 24 24"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>Messages</button>
     <button class="nav-btn primary"><svg viewBox="0 0 24 24"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>Log In</button>
   </div>
 </nav>
+
+<!-- MAIN PAGE: Michael Scott -->
+<div id="mainPage">
 <div class="page-wrapper">
   <div class="profile-header">
     <div class="avatar-wrap">
@@ -160,7 +186,7 @@ footer .footer-accent { display:inline-block; width:32px; height:2px; background
     </div>
     <div class="profile-info">
       <div class="profile-username">Michael.G.Scott<div class="verified" title="Verified"><svg viewBox="0 0 12 12"><polyline points="2,6 5,9 10,3"/></svg></div></div>
-      <div class="profile-handle">@Michael.G.Scott &nbsp;&middot;&nbsp; he/him,</div>
+      <div class="profile-handle">@Michael.G.Scott &nbsp;&middot;&nbsp; he/him</div>
       <div class="profile-stats">
         <div class="stat"><span class="stat-num">162</span><span class="stat-label">posts</span></div>
         <div class="stat"><span class="stat-num">24.3k</span><span class="stat-label">followers</span></div>
@@ -187,6 +213,44 @@ footer .footer-accent { display:inline-block; width:32px; height:2px; background
   </div>
   <div class="photo-grid" id="photoGrid"></div>
 </div>
+</div>
+
+<!-- ALT PAGE -->
+<div id="jimPage">
+<div class="page-wrapper">
+  <div class="profile-header">
+    <div class="avatar-wrap">
+      <div class="avatar-ring"><div class="avatar-inner">
+        <img src="images/RonSwansonProfilePic.jpg" alt="Ron Swanson">
+      </div></div>
+    </div>
+    <div class="profile-info">
+      <div class="profile-username">Ron.Swanson</div>
+      <div class="profile-handle">@ron.swanson &nbsp;&middot;&nbsp; he/him</div>
+      <div class="profile-stats">
+        <div class="stat"><span class="stat-num">47</span><span class="stat-label">posts</span></div>
+        <div class="stat"><span class="stat-num">3.1k</span><span class="stat-label">followers</span></div>
+        <div class="stat"><span class="stat-num">214</span><span class="stat-label">following</span></div>
+      </div>
+      <div class="profile-bio">
+        Sales · Scranton, PA 📎<br>
+        Married to <a href="#">@pam.beesly</a> · Dad · Former paper salesman
+      </div>
+      <div class="profile-actions">
+        <button class="profile-btn solid">Follow</button>
+        <button class="profile-btn outline">Message</button>
+      </div>
+    </div>
+  </div>
+  <div class="tabs">
+    <div class="tab active" onclick="jimTabClick(this)">Grid</div>
+    <div class="tab" onclick="jimTabClick(this)">Reels</div>
+    <div class="tab" onclick="jimTabClick(this)">Tagged</div>
+  </div>
+  <div class="photo-grid" id="Grid2"></div>
+</div>
+</div>
+
 <footer>
   <span class="footer-logo">Q<span>-Stagram</span></span>
   <div class="footer-accent"></div>
@@ -196,6 +260,8 @@ footer .footer-accent { display:inline-block; width:32px; height:2px; background
   </div>
   <div>&copy; 2025 Q-Stagram &middot; For educational and demonstration purposes only</div>
 </footer>
+
+<!-- POST MODAL (shared) -->
 <div class="modal-backdrop" id="modalBackdrop">
   <div class="modal">
     <div class="modal-image-side" style="position:relative;">
@@ -205,12 +271,12 @@ footer .footer-accent { display:inline-block; width:32px; height:2px; background
     </div>
     <div class="modal-info-side">
       <div class="modal-header">
-        <div class="modal-avatar"><img src="images/michael-scott-in-the-office.jpg" alt="michael"></div>
-        <div><div class="modal-user">Michael.G.Scott</div><div class="modal-location" id="modalLocation"></div></div>
+        <div class="modal-avatar"><img id="modalAvatarImg" src="images/michael-scott-in-the-office.jpg" alt="user"></div>
+        <div><div class="modal-user" id="modalUser">Michael.G.Scott</div><div class="modal-location" id="modalLocation"></div></div>
         <button class="modal-close" onclick="closeModal()"><svg viewBox="0 0 24 24"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg></button>
       </div>
       <div class="modal-body">
-        <div class="modal-caption"><strong>Michael.G.Scott</strong> <span id="modalCaption"></span></div>
+        <div class="modal-caption"><strong id="modalCaptionUser"></strong> <span id="modalCaption"></span></div>
         <div class="modal-date" id="modalDate"></div>
         <div class="modal-divider"></div>
         <div class="comments-list" id="commentsList"></div>
@@ -231,11 +297,13 @@ footer .footer-accent { display:inline-block; width:32px; height:2px; background
     </div>
   </div>
 </div>
+
+<!-- STORY MODAL -->
 <div class="story-modal-backdrop" id="storyBackdrop">
   <div class="story-modal">
     <div class="story-progress-bar" id="storyProgressBar"></div>
     <div class="story-header">
-      <div class="story-header-avatar"><img src="https://images.unsplash.com/photo-1544005313-94ddf0286df2?w=72&h=72&fit=crop&crop=face" alt="quinn"></div>
+      <div class="story-header-avatar"><img src="https://images.unsplash.com/photo-1544005313-94ddf0286df2?w=72&h=72&fit=crop&crop=face" alt="user"></div>
       <div class="story-header-info"><div class="story-header-name">quinn.ashford</div><div class="story-header-time" id="storyTime"></div></div>
       <button class="story-close-btn" onclick="closeStory()"><svg viewBox="0 0 24 24"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg></button>
     </div>
@@ -247,172 +315,404 @@ footer .footer-accent { display:inline-block; width:32px; height:2px; background
     </div>
   </div>
 </div>
+
 <script>
-const AVT={ella:"https://images.unsplash.com/photo-1531746020798-e6953c6e8e04?w=60&h=60&fit=crop&crop=face",marco:"https://images.unsplash.com/photo-1500648767791-00dcc994a43e?w=60&h=60&fit=crop&crop=face",priya:"https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=60&h=60&fit=crop&crop=face",tom:"https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?w=60&h=60&fit=crop&crop=face",paws:"https://images.unsplash.com/photo-1587300003388-59208cc962cb?w=60&h=60&fit=crop",saoirse:"https://images.unsplash.com/photo-1487412720507-e7ab37603c6f?w=60&h=60&fit=crop&crop=face",sophia:"https://images.unsplash.com/photo-1438761681033-6461ffad8d80?w=60&h=60&fit=crop&crop=face",james:"https://images.unsplash.com/photo-1463453091185-61582044d556?w=60&h=60&fit=crop&crop=face"};
-const stories=[
-{id:1,label:"Holiday :)",cover:"images/Venice/IMG_3210.jpg",slides:[
-  {image:"images/Venice/IMG_3211.jpg",caption:"",time:"2 days ago"},
-  {image:"images/Venice/IMG_3215.jpg",caption:"",time:"2 days ago"},
-  {image:"images/Venice/IMG_3220.jpg",caption:"",time:"1 day ago"},
-  {image:"images/Venice/IMG_3221.jpg",caption:"",time:"2 days ago"},
-  {image:"images/Venice/IMG_3228.jpg",caption:"",time:"2 days ago"},
-  {image:"images/Venice/IMG_3230.jpg",caption:"",time:"1 day ago"}
-]},
-{id:2,label:"North",cover:"images/Scotland/IMG_3726.jpg",slides:[
-  {image:"images/Scotland/IMG_3727.jpg",caption:"",time:"1 week ago"},
-  {image:"images/Scotland/IMG_3728.jpg",caption:"",time:"1 week ago"},
-  {image:"images/Scotland/IMG_3769.jpg",caption:"",time:"5 days ago"}
-]},
-{id:3,label:"Clover",cover:"images/Dublin/IMG_4459.jpg",slides:[
-  {image:"images/Dublin/IMG_4504.jpg",caption:"",time:"3 days ago"},
-  {image:"images/Dublin/IMG_4525.jpg",caption:"",time:"3 days ago"},
-  {image:"images/Dublin/IMG_4459.jpg",caption:"",time:"3 days ago"},
-  {image:"images/Dublin/IMG_4526.jpg",caption:"",time:"3 days ago"},
-  {image:"images/Dublin/IMG_4527.jpg",caption:"",time:"3 days ago"}
-]},
-{id:4,label:"LONDON 💍",cover:"images/London/IMG_4738.jpg",slides:[
-  {image:"images/London/IMG_4738.jpg",caption:"",time:"2 days ago"},
-  {image:"images/London/IMG_4734.jpg",caption:"",time:"1 day ago"},
-  {image:"images/London/IMG_4733.jpg",caption:"",time:"1 day ago"},
-  {image:"images/London/IMG_4726.jpg",caption:"",time:"1 day ago"},
-  {image:"images/London/IMG_4709.jpg",caption:"",time:"1 day ago"}
-]}
+/* ── SEARCH: SHA-256 hash comparison ── */
+const _th = "c5704ed0c3b2bc452494dc14a7afed261bdef186ee23746a299bea01b31fb2fa";
+
+async function sha256(str) {
+  const buf = await crypto.subtle.digest("SHA-256", new TextEncoder().encode(str));
+  return Array.from(new Uint8Array(buf)).map(b => b.toString(16).padStart(2,"0")).join("");
+}
+
+let _searchTimer = null;
+
+async function doSearch() {
+  const raw = document.getElementById("searchInput").value.trim();
+  if (!raw) return;
+  const h = await sha256(raw);
+  const errEl = document.getElementById("searchError");
+  if (h === _th) {
+    errEl.classList.remove("visible");
+    document.getElementById("searchInput").value = "";
+    showJimPage();
+  } else {
+    errEl.classList.add("visible");
+    clearTimeout(_searchTimer);
+    _searchTimer = setTimeout(() => errEl.classList.remove("visible"), 2800);
+  }
+}
+
+document.getElementById("searchInput").addEventListener("keydown", e => {
+  if (e.key === "Enter") doSearch();
+});
+
+function showJimPage() {
+  document.getElementById("mainPage").style.display = "none";
+  document.getElementById("jimPage").style.display = "block";
+  window.scrollTo(0, 0);
+}
+
+function goHome() {
+  document.getElementById("jimPage").style.display = "none";
+  document.getElementById("mainPage").style.display = "block";
+  window.scrollTo(0, 0);
+}
+
+/* ── AVATARS ── */
+const AVT = {
+  ella:"https://images.unsplash.com/photo-1531746020798-e6953c6e8e04?w=60&h=60&fit=crop&crop=face",
+  marco:"https://images.unsplash.com/photo-1500648767791-00dcc994a43e?w=60&h=60&fit=crop&crop=face",
+  priya:"https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=60&h=60&fit=crop&crop=face",
+  tom:"https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?w=60&h=60&fit=crop&crop=face",
+  paws:"https://images.unsplash.com/photo-1587300003388-59208cc962cb?w=60&h=60&fit=crop",
+  saoirse:"https://images.unsplash.com/photo-1487412720507-e7ab37603c6f?w=60&h=60&fit=crop&crop=face",
+  sophia:"https://images.unsplash.com/photo-1438761681033-6461ffad8d80?w=60&h=60&fit=crop&crop=face",
+  james:"https://images.unsplash.com/photo-1463453091185-61582044d556?w=60&h=60&fit=crop&crop=face",
+  pam:"https://images.unsplash.com/photo-1544005313-94ddf0286df2?w=60&h=60&fit=crop&crop=face",
+  dwight:"https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?w=60&h=60&fit=crop&crop=face",
+  michael:"https://images.unsplash.com/photo-1463453091185-61582044d556?w=60&h=60&fit=crop&crop=face"
+};
+
+/* ── STORIES ── */
+const stories = [
+  {id:1,label:"Holiday :)",cover:"images/Venice/IMG_3210.jpg",slides:[
+    {image:"images/Venice/IMG_3211.jpg",caption:"",time:"2 days ago"},
+    {image:"images/Venice/IMG_3215.jpg",caption:"",time:"2 days ago"},
+    {image:"images/Venice/IMG_3220.jpg",caption:"",time:"1 day ago"},
+    {image:"images/Venice/IMG_3221.jpg",caption:"",time:"2 days ago"},
+    {image:"images/Venice/IMG_3228.jpg",caption:"",time:"2 days ago"},
+    {image:"images/Venice/IMG_3230.jpg",caption:"",time:"1 day ago"}
+  ]},
+  {id:2,label:"North",cover:"images/Scotland/IMG_3726.jpg",slides:[
+    {image:"images/Scotland/IMG_3727.jpg",caption:"",time:"1 week ago"},
+    {image:"images/Scotland/IMG_3728.jpg",caption:"",time:"1 week ago"},
+    {image:"images/Scotland/IMG_3769.jpg",caption:"",time:"5 days ago"}
+  ]},
+  {id:3,label:"Clover",cover:"images/Dublin/IMG_4459.jpg",slides:[
+    {image:"images/Dublin/IMG_4504.jpg",caption:"",time:"3 days ago"},
+    {image:"images/Dublin/IMG_4525.jpg",caption:"",time:"3 days ago"},
+    {image:"images/Dublin/IMG_4459.jpg",caption:"",time:"3 days ago"},
+    {image:"images/Dublin/IMG_4526.jpg",caption:"",time:"3 days ago"},
+    {image:"images/Dublin/IMG_4527.jpg",caption:"",time:"3 days ago"}
+  ]},
+  {id:4,label:"LONDON 💍",cover:"images/London/IMG_4738.jpg",slides:[
+    {image:"images/London/IMG_4738.jpg",caption:"",time:"2 days ago"},
+    {image:"images/London/IMG_4734.jpg",caption:"",time:"1 day ago"},
+    {image:"images/London/IMG_4733.jpg",caption:"",time:"1 day ago"},
+    {image:"images/London/IMG_4726.jpg",caption:"",time:"1 day ago"},
+    {image:"images/London/IMG_4709.jpg",caption:"",time:"1 day ago"}
+  ]}
 ];
 
+/* ── MICHAEL'S POSTS ── */
+const posts = [
+  {id:1,owner:"Michael.G.Scott",ownerAvatar:"images/michael-scott-in-the-office.jpg",image:"images/Cat/IMG_4379.jpg",thumb:"images/Cat/IMG_4379.jpg",caption:"She has claimed the spot in on the bed and is absolutely not moving. Living her best life and honestly same 🐱☀️ #CatsOfInstagram #CatLife #HomeComforts",date:"MAY 27, 2025",location:"",likes:1653,comments:[
+    {user:"priya.k",avatar:AVT.priya,text:"She is SO smug and I love her for it 😂🐱",time:"6h"},
+    {user:"ella.ashford",avatar:AVT.ella,text:"Give her a cuddle from me!! Miss her 🥹",time:"5h"},
+    {user:"marco_levi",avatar:AVT.marco,text:"The cat and the dog in the same flat?? How is that going 😂",time:"4h"},
+    {user:"londonpawsrescue",avatar:AVT.paws,text:"A foster dog AND a cat? You're a hero 🐾🐱",time:"2h"}
+  ]},
+  {id:2,owner:"Michael.G.Scott",ownerAvatar:"images/michael-scott-in-the-office.jpg",image:"images/Dublin/IMG_4527.jpg",thumb:"images/Dublin/IMG_4527.jpg",caption:"Somewhere in this city the sun is shining. It is not here. Still wouldn't change it for the world 🌧️☁️ #Travel #CityBreak #SlowTravel #HiddenGems",date:"MAY 19, 2025",location:"",likes:1432,comments:[
+    {user:"priya.k",avatar:AVT.priya,text:"WHERE IS THIS it looks so moody and atmospheric 😍",time:"7h"},
+    {user:"james_photo",avatar:AVT.james,text:"Overcast light is honestly underrated for photography, love the mood here 📸",time:"3h"}
+  ]},
+  {id:3,owner:"Michael.G.Scott",ownerAvatar:"images/michael-scott-in-the-office.jpg",image:"images/Dublin/IMG_4459.jpg",thumb:"images/Dublin/IMG_4459.jpg",caption:"Grey skies but make it iconic ☁️✨ Some things just demand to be photographed even in the drizzle. #Travel #CityBreak #SlowTravel #Architecture",date:"MAY 28, 2024",location:"",likes:1231,comments:[
+    {user:"priya.k",avatar:AVT.priya,text:"Love this shot! The clouds actually make it look even better 😍",time:"8h"},
+    {user:"marco_levi",avatar:AVT.marco,text:"Drizzle and all, still looks amazing 😂☁️",time:"7h"},
+    {user:"ella.ashford",avatar:AVT.ella,text:"The grey skies give it such a moody vibe, obsessed 🖤",time:"6h"},
+    {user:"james_photo",avatar:AVT.james,text:"Overcast light is so underrated for architecture shots, great composition 📸",time:"4h"}
+  ]},
+  {id:4,owner:"Michael.G.Scott",ownerAvatar:"images/michael-scott-in-the-office.jpg",image:"images/New CSGO Image.png",thumb:"images/New CSGO Image.png",caption:"Saturday morning ritual that keeps me sane 🧘 Two years of practice and still learning something new every session. Grateful for @YogaWithSaoirse and this little community. #YogaLife #SaturdayMorning #SlowLiving #EastLondon",date:"MAY 3, 2025",location:"London Fields, Hackney",likes:1923,comments:[
+    {user:"yogawithsaoirse",avatar:AVT.saoirse,text:"Quinn!! You are such a dedicated student — crow pose is coming, I promise 🙏✨",time:"5h"},
+    {user:"priya.k",avatar:AVT.priya,text:"I keep saying I'll come and I keep sleeping in 😭 Next week FOR REAL",time:"4h"},
+    {user:"marco_levi",avatar:AVT.marco,text:"Every week with the Saturday yoga content. We get it Quinn, you're zen 😂",time:"3h"},
+    {user:"ella.ashford",avatar:AVT.ella,text:"London Fields! I used to go there all the time when I lived in London 🌿",time:"2h"}
+  ]},
+  {id:5,owner:"Michael.G.Scott",ownerAvatar:"images/michael-scott-in-the-office.jpg",image:"https://images.unsplash.com/photo-1512621776951-a57141f2eefd?w=800&h=800&fit=crop",thumb:"https://images.unsplash.com/photo-1512621776951-a57141f2eefd?w=400&h=400&fit=crop",caption:"Found a new favourite spot in Bethnal Green — entirely plant-based menu and everything was outstanding 🌱 The jackfruit tacos are life-changing. #VeganEats #PlantBased #BethnalGreen #EastLondon #FoodPhotography",date:"APRIL 26, 2025",location:"Bethnal Green, London",likes:2341,comments:[
+    {user:"priya.k",avatar:AVT.priya,text:"I was THERE and the tacos were genuinely unreal. Going back next week",time:"6h"},
+    {user:"marco_levi",avatar:AVT.marco,text:"You and Priya eat out more than anyone I know 😂 Save some tacos for me",time:"5h"},
+    {user:"tom.at.meridian",avatar:AVT.tom,text:"This is literally round the corner from the studio! Adding it to the team lunch list 🌮",time:"4h"},
+    {user:"ella.ashford",avatar:AVT.ella,text:"Jackfruit tacos?? Quinn you've fully converted to plant-based haven't you 😂",time:"2h"}
+  ]},
+  {id:6,owner:"Michael.G.Scott",ownerAvatar:"images/michael-scott-in-the-office.jpg",image:"https://images.unsplash.com/photo-1593113630400-ea4288922559?w=800&h=800&fit=crop",thumb:"https://images.unsplash.com/photo-1593113630400-ea4288922559?w=400&h=400&fit=crop",caption:"Spent Saturday afternoon at the National Animal Welfare March in central London. This cause matters deeply to me — if you care about animals, use your voice 🐾🌿 #AnimalWelfare #AnimalRights #LondonPawsRescue #MarchForAnimals",date:"APRIL 12, 2025",location:"Central London",likes:3788,comments:[
+    {user:"londonpawsrescue",avatar:AVT.paws,text:"So glad you were there Quinn!! Your voice means so much to us 🐾💚",time:"8h"},
+    {user:"marco_levi",avatar:AVT.marco,text:"Wish I could have made it — so proud of you for showing up 💚",time:"7h"},
+    {user:"priya.k",avatar:AVT.priya,text:"It was such a powerful afternoon. So glad we went together",time:"6h"},
+    {user:"yogawithsaoirse",avatar:AVT.saoirse,text:"Yes!! 🌱 So important. Thank you for using your platform for this",time:"4h"},
+    {user:"ella.ashford",avatar:AVT.ella,text:"So proud of you Quinn. You've always been this person 💛",time:"3h"}
+  ]},
+  {id:7,owner:"Michael.G.Scott",ownerAvatar:"images/michael-scott-in-the-office.jpg",image:"https://images.unsplash.com/photo-1504214208698-ea1916a2195a?w=800&h=800&fit=crop",thumb:"https://images.unsplash.com/photo-1504214208698-ea1916a2195a?w=400&h=400&fit=crop",caption:"Arashiyama bamboo grove at 6am — just me, the light, and the sound of leaves. Three weeks in Japan on a mini work sabbatical. Best decision I've ever made. 🎋✨ #Kyoto #Japan #SlowTravel #SoloTravel #Wanderlust",date:"MARCH 18, 2025",location:"Arashiyama, Kyoto",likes:6204,comments:[
+    {user:"marco_levi",avatar:AVT.marco,text:"The envy I feel right now is immeasurable. Were you actually ALONE in there?!",time:"10h"},
+    {user:"tom.at.meridian",avatar:AVT.tom,text:"Miss you at the studio Q! Come back with matcha KitKats and all is forgiven 😂",time:"9h"},
+    {user:"ella.ashford",avatar:AVT.ella,text:"I cannot believe you went without me. This looks UNREAL 😭",time:"8h"},
+    {user:"priya.k",avatar:AVT.priya,text:"The flat is so quiet without you honestly 😭 Come home soon",time:"6h"},
+    {user:"sophiatravel",avatar:AVT.sophia,text:"Japan solo is EVERYTHING. Did you make it to Nara?",time:"4h"}
+  ]},
+  {id:8,owner:"Michael.G.Scott",ownerAvatar:"images/michael-scott-in-the-office.jpg",image:"images/Dog/20220501_164834.jpg",thumb:"images/Dog/20220501_164834.jpg",caption:"Rain or shine, this one demands his walk and honestly it's the best part of my day 🐾🌧️ Fostering has completely changed my morning routine and I am not complaining one bit. #FosterDog #DogWalk #DogLife #LondonPawsRescue #EastLondon",date:"FEBRUARY 14, 2025",location:"Victoria Park, London",likes:2987,comments:[
+    {user:"priya.k",avatar:AVT.priya,text:"He looks SO happy 😭 best boy",time:"9h"},
+    {user:"ella.ashford",avatar:AVT.ella,text:"The rain doesn't even bother him does it 😂🐶",time:"8h"},
+    {user:"marco_levi",avatar:AVT.marco,text:"You and this dog, honestly the best duo 😂🐾",time:"6h"}
+  ]},
+  {id:9,owner:"Michael.G.Scott",ownerAvatar:"images/michael-scott-in-the-office.jpg",image:"https://images.unsplash.com/photo-1472214103451-9374bd1c798e?w=800&h=800&fit=crop",thumb:"https://images.unsplash.com/photo-1472214103451-9374bd1c798e?w=400&h=400&fit=crop",caption:"Scotland. Nowhere on earth makes me feel so small in the best possible way 🏔️🌿 Taking a few days to recharge before a big push at work. #ScottishHighlands #NatureHeals #SlowTravel #OffGrid",date:"JANUARY 20, 2025",location:"Scottish Highlands",likes:4102,comments:[
+    {user:"marco_levi",avatar:AVT.marco,text:"You and Scotland 😍 This is your third trip up there isn't it?",time:"14h"},
+    {user:"priya.k",avatar:AVT.priya,text:"I miss you but I'm so glad you're getting this time. You needed it 🌿",time:"12h"},
+    {user:"ella.ashford",avatar:AVT.ella,text:"This is literally an hour from where we grew up and you make it look like a postcard 😂",time:"10h"},
+    {user:"tom.at.meridian",avatar:AVT.tom,text:"See you Monday Q! The studio is very dull without you 😅",time:"8h"}
+  ]},
+  {id:10,owner:"Michael.G.Scott",ownerAvatar:"images/michael-scott-in-the-office.jpg",image:"images/Scotland/IMG_3769.jpg",thumb:"images/Scotland/IMG_3769.jpg",caption:"Back in this city for work and somehow it feels even better the second time around 🏴󠁧󠁢󠁳󠁣󠁴󠁿✨ Managed to sneak out for an hour between meetings and I have zero regrets. #Travel #WorkTrip #Scotland #SlowTravel",date:"NOVEMBER 8, 2024",location:"",likes:3102,comments:[
+    {user:"priya.k",avatar:AVT.priya,text:"A work trip here?? So jealous, hope you get some time to explore 😍",time:"10h"},
+    {user:"marco_levi",avatar:AVT.marco,text:"Only you could make a work trip look this good 😂✨",time:"9h"},
+    {user:"ella.ashford",avatar:AVT.ella,text:"You're literally always here now 😂 save some of it for me!",time:"8h"},
+    {user:"tom.at.meridian",avatar:AVT.tom,text:"Back in the office tomorrow though right?? 👀😂",time:"6h"}
+  ]},
+  {id:11,owner:"Michael.G.Scott",ownerAvatar:"images/michael-scott-in-the-office.jpg",image:"images/Cat/IMG_2214.jpg",thumb:"images/Cat/IMG_2214.jpg",caption:"Found her. She has been under here for three hours and is showing absolutely no signs of leaving 🐱😂 This is fine. Everything is fine. #CatsOfInstagram #CatLife #HidingSpot",date:"SEPTEMBER 5, 2024",location:"",likes:2341,comments:[
+    {user:"priya.k",avatar:AVT.priya,text:"The little eyes peering out 😭🐱 I can't handle it",time:"8h"},
+    {user:"marco_levi",avatar:AVT.marco,text:"She looks very comfortable and very unbothered 😂",time:"7h"},
+    {user:"ella.ashford",avatar:AVT.ella,text:"She is SUCH a drama queen I love her 😂🖤",time:"6h"}
+  ]},
+  {id:12,owner:"Michael.G.Scott",ownerAvatar:"images/michael-scott-in-the-office.jpg",image:"images/Venice/IMG_3215.jpg",thumb:"images/Venice/IMG_3215.jpg",caption:"There is nowhere on earth quite like this place 🇮🇹☀️ Already planning the next trip back. #Italy #Travel #SlowTravel #GoldenHour",date:"MAY 19, 2024",location:"Italy",likes:2108,comments:[
+    {user:"priya.k",avatar:AVT.priya,text:"I am so jealous right now 😭🇮🇹",time:"8h"},
+    {user:"marco_levi",avatar:AVT.marco,text:"The light here is just unreal, stunning shot 😍",time:"7h"},
+    {user:"ella.ashford",avatar:AVT.ella,text:"Italy on my list for next year, looks absolutely gorgeous 🥹",time:"6h"},
+    {user:"yogawithsaoirse",avatar:AVT.saoirse,text:"Dreamy 🌿☀️",time:"4h"}
+  ]},
+  {id:13,owner:"Michael.G.Scott",ownerAvatar:"images/michael-scott-in-the-office.jpg",image:"images/Venice/IMG_3220.jpg",thumb:"images/Venice/IMG_3220.jpg",caption:"Done some more exploring #Holiday #Italy #ICantSwim",date:"MAY 19, 2024",location:"",likes:708,comments:[
+    {user:"priya.k",avatar:AVT.priya,text:"SO COOL.",time:"8h"}
+  ]},
+  {id:14,owner:"Michael.G.Scott",ownerAvatar:"images/michael-scott-in-the-office.jpg",image:"images/Venice/IMG_3211.jpg",thumb:"images/Venice/IMG_3211.jpg",caption:"Managed to get in before the crowds, it's so quiet!! #Holiday #Italy",date:"MAY 18, 2024",location:"",likes:1084,comments:[
+    {user:"priya.k",avatar:AVT.priya,text:"WOW that looks AMAZING.",time:"8h"},
+    {user:"marco_levi",avatar:AVT.marco,text:"That looks like venice to me, its a lovely place",time:"7h"},
+    {user:"ella.ashford",avatar:AVT.ella,text:"Hope you enjoy your holiday!",time:"6h"},
+    {user:"yogawithsaoirse",avatar:AVT.saoirse,text:"Don't fall in!! 🍃",time:"4h"}
+  ]},
+  {id:15,owner:"Michael.G.Scott",ownerAvatar:"images/michael-scott-in-the-office.jpg",image:"images/Dog/IMG_1832.jpg",thumb:"images/Dog/IMG_1832.jpg",caption:"Going to miss him while im on holiday :(",date:"MAY 15, 2024",location:"London, UK",likes:1342,comments:[
+    {user:"priya.k",avatar:AVT.priya,text:"I need to meet this one immediately 😭",time:"5h"},
+    {user:"ella.ashford",avatar:AVT.ella,text:"STOP it, too cute 🥹",time:"4h"},
+    {user:"marco_levi",avatar:AVT.marco,text:"Does this one hate the postman too? 😂",time:"2h"}
+  ]},
+  {id:16,owner:"Michael.G.Scott",ownerAvatar:"images/michael-scott-in-the-office.jpg",image:"images/Scotland/IMG_3726.jpg",thumb:"images/Scotland/IMG_3726.jpg",caption:"This city never gets old 🏰✨ Every time I visit I find a new angle to fall in love with. Scotland, you have my whole heart. #Scotland #Travel #SlowTravel #History",date:"APRIL 20, 2024",location:"",likes:2156,comments:[
+    {user:"priya.k",avatar:AVT.priya,text:"This view!! When are we going together?? 😭",time:"8h"},
+    {user:"ella.ashford",avatar:AVT.ella,text:"Grew up so close to here and it still takes my breath away 🏴󠁧󠁢󠁳󠁣󠁴󠁿",time:"7h"},
+    {user:"marco_levi",avatar:AVT.marco,text:"I would never have guessed where this is, stunning photo 😍",time:"5h"},
+    {user:"james_photo",avatar:AVT.james,text:"Incredible shot, what time of day was this taken?",time:"3h"}
+  ]},
+  {id:17,owner:"Michael.G.Scott",ownerAvatar:"images/michael-scott-in-the-office.jpg",image:"images/Scotland/IMG_3728.jpg",thumb:"images/Scotland/IMG_3728.jpg",caption:"Got completely lost down this street for about an hour and it was the best thing that could have happened 🏴󠁧󠁢󠁳󠁣󠁴󠁿✨ Some places just have a feeling you can't quite put into words. #Travel #SlowTravel #HiddenGems",date:"APRIL 19, 2024",location:"",likes:1876,comments:[
+    {user:"priya.k",avatar:AVT.priya,text:"Where IS this?! It looks like something out of a film 😍",time:"6h"},
+    {user:"ella.ashford",avatar:AVT.ella,text:"I have a feeling I know exactly where this is 👀",time:"5h"},
+    {user:"marco_levi",avatar:AVT.marco,text:"Quinn you and your mystery locations 😂 just tell us!",time:"4h"},
+    {user:"james_photo",avatar:AVT.james,text:"The light here is gorgeous, love the composition 📸",time:"2h"}
+  ]},
+  {id:18,owner:"Michael.G.Scott",ownerAvatar:"images/michael-scott-in-the-office.jpg",image:"images/London/IMG_4738.jpg",thumb:"images/London/IMG_4738.jpg",caption:"Late nights in this city hit different 🌉✨ Never gets old no matter how many times I've seen it. #London #NightPhotography #CityLights",date:"JANUARY 24, 2024",location:"Southbank, London",likes:2934,comments:[
+    {user:"priya.k",avatar:AVT.priya,text:"This was such a good night 🥂 We need to do it again soon!",time:"9h"},
+    {user:"marco_levi",avatar:AVT.marco,text:"The reflections on the water 😍 incredible shot Quinn",time:"8h"},
+    {user:"ella.ashford",avatar:AVT.ella,text:"Living in London and I never do stuff like this anymore 😭 jealous!",time:"6h"},
+    {user:"james_photo",avatar:AVT.james,text:"Night photography in London is unbeatable. What settings were you shooting on? 📸",time:"3h"}
+  ]},
+  {id:19,owner:"Michael.G.Scott",ownerAvatar:"images/michael-scott-in-the-office.jpg",image:"images/WH/IMG_3863.jpg",thumb:"images/WH/IMG_3863.jpg",caption:"Finally finished these guys after way too many late nights and far too much gold spray primer 🎨✨ Honestly so happy with how they came out. The hobby is taking over my life and I have zero regrets. #Warhammer #Warhammer40k #Miniatures #MiniaturePainting #Hobbytime",date:"JANUARY 10, 2024",location:"",likes:1247,comments:[
+    {user:"priya.k",avatar:AVT.priya,text:"I have absolutely no idea what these are but they look incredible 😂🎨",time:"7h"},
+    {user:"marco_levi",avatar:AVT.marco,text:"YESSS the gold came out so well!! What paints did you use for the base coat?",time:"6h"},
+    {user:"ella.ashford",avatar:AVT.ella,text:"My brother in law is going to lose his mind when he sees these 😂",time:"5h"},
+    {user:"james_photo",avatar:AVT.james,text:"The detail on these is insane, how long did they take? 👏",time:"3h"}
+  ]}
 ];
-const posts=[
-{id:1,image:"images/Cat/IMG_4379.jpg", thumb:"images/Cat/IMG_4379.jpg", caption:"She has claimed the spot in on the bed and is absolutely not moving. Living her best life and honestly same 🐱☀️ #CatsOfInstagram #CatLife #HomeComforts", date:"MAY 27, 2025", location:"", likes:1653, comments:[
-  {user:"priya.k", avatar:AVT.priya, text:"She is SO smug and I love her for it 😂🐱", time:"6h"},
-  {user:"ella.ashford", avatar:AVT.ella, text:"Give her a cuddle from me!! Miss her 🥹", time:"5h"},
-  {user:"marco_levi", avatar:AVT.marco, text:"The cat and the dog in the same flat?? How is that going 😂", time:"4h"},
-  {user:"londonpawsrescue", avatar:AVT.paws, text:"A foster dog AND a cat? You're a hero 🐾🐱", time:"2h"}
-]},
-{id:2,image:"images/Dublin/IMG_4527.jpg", thumb:"images/Dublin/IMG_4527.jpg", caption:"Somewhere in this city the sun is shining. It is not here. Still wouldn't change it for the world 🌧️☁️ #Travel #CityBreak #SlowTravel #HiddenGems", date:"MAY 19, 2025", location:"", likes:1432, comments:[
-  {user:"priya.k", avatar:AVT.priya, text:"WHERE IS THIS it looks so moody and atmospheric 😍", time:"7h"},
-  {user:"james_photo", avatar:AVT.james, text:"Overcast light is honestly underrated for photography, love the mood here 📸", time:"3h"}
-]},
-{id:3,image:"images/Dublin/IMG_4459.jpg", thumb:"images/Dublin/IMG_4459.jpg", caption:"Grey skies but make it iconic ☁️✨ Some things just demand to be photographed even in the drizzle. #Travel #CityBreak #SlowTravel #Architecture", date:"MAY 28, 2024", location:"", likes:1231, comments:[
-  {user:"priya.k", avatar:AVT.priya, text:"Love this shot! The clouds actually make it look even better 😍", time:"8h"},
-  {user:"marco_levi", avatar:AVT.marco, text:"Drizzle and all, still looks amazing 😂☁️", time:"7h"},
-  {user:"ella.ashford", avatar:AVT.ella, text:"The grey skies give it such a moody vibe, obsessed 🖤", time:"6h"},
-  {user:"james_photo", avatar:AVT.james, text:"Overcast light is so underrated for architecture shots, great composition 📸", time:"4h"}
-]},
-{id:4,image:"images/New CSGO Image.png",thumb:"images/New CSGO Image.png",caption:"Saturday morning ritual that keeps me sane 🧘 Two years of practice and still learning something new every session. Grateful for @YogaWithSaoirse and this little community. #YogaLife #SaturdayMorning #SlowLiving #EastLondon",date:"MAY 3, 2025",location:"London Fields, Hackney",likes:1923,comments:[
-  {user:"yogawithsaoirse",avatar:AVT.saoirse,text:"Quinn!! You are such a dedicated student — crow pose is coming, I promise 🙏✨",time:"5h"},
-  {user:"priya.k",avatar:AVT.priya,text:"I keep saying I'll come and I keep sleeping in 😭 Next week FOR REAL",time:"4h"},
-  {user:"marco_levi",avatar:AVT.marco,text:"Every week with the Saturday yoga content. We get it Quinn, you're zen 😂",time:"3h"},
-  {user:"ella.ashford",avatar:AVT.ella,text:"London Fields! I used to go there all the time when I lived in London 🌿",time:"2h"}
-]},
-{id:5,image:"https://images.unsplash.com/photo-1512621776951-a57141f2eefd?w=800&h=800&fit=crop",thumb:"https://images.unsplash.com/photo-1512621776951-a57141f2eefd?w=400&h=400&fit=crop",caption:"Found a new favourite spot in Bethnal Green — entirely plant-based menu and everything was outstanding 🌱 The jackfruit tacos are life-changing. #VeganEats #PlantBased #BethnalGreen #EastLondon #FoodPhotography",date:"APRIL 26, 2025",location:"Bethnal Green, London",likes:2341,comments:[
-  {user:"priya.k",avatar:AVT.priya,text:"I was THERE and the tacos were genuinely unreal. Going back next week",time:"6h"},
-  {user:"marco_levi",avatar:AVT.marco,text:"You and Priya eat out more than anyone I know 😂 Save some tacos for me",time:"5h"},
-  {user:"tom.at.meridian",avatar:AVT.tom,text:"This is literally round the corner from the studio! Adding it to the team lunch list 🌮",time:"4h"},
-  {user:"ella.ashford",avatar:AVT.ella,text:"Jackfruit tacos?? Quinn you've fully converted to plant-based haven't you 😂",time:"2h"}
-]},
-{id:6,image:"https://images.unsplash.com/photo-1593113630400-ea4288922559?w=800&h=800&fit=crop",thumb:"https://images.unsplash.com/photo-1593113630400-ea4288922559?w=400&h=400&fit=crop",caption:"Spent Saturday afternoon at the National Animal Welfare March in central London. This cause matters deeply to me — if you care about animals, use your voice 🐾🌿 #AnimalWelfare #AnimalRights #LondonPawsRescue #MarchForAnimals",date:"APRIL 12, 2025",location:"Central London",likes:3788,comments:[
-  {user:"londonpawsrescue",avatar:AVT.paws,text:"So glad you were there Quinn!! Your voice means so much to us 🐾💚",time:"8h"},
-  {user:"marco_levi",avatar:AVT.marco,text:"Wish I could have made it — so proud of you for showing up 💚",time:"7h"},
-  {user:"priya.k",avatar:AVT.priya,text:"It was such a powerful afternoon. So glad we went together",time:"6h"},
-  {user:"yogawithsaoirse",avatar:AVT.saoirse,text:"Yes!! 🌱 So important. Thank you for using your platform for this",time:"4h"},
-  {user:"ella.ashford",avatar:AVT.ella,text:"So proud of you Quinn. You've always been this person 💛",time:"3h"}
-]},
-{id:7,image:"https://images.unsplash.com/photo-1504214208698-ea1916a2195a?w=800&h=800&fit=crop",thumb:"https://images.unsplash.com/photo-1504214208698-ea1916a2195a?w=400&h=400&fit=crop",caption:"Arashiyama bamboo grove at 6am — just me, the light, and the sound of leaves. Three weeks in Japan on a mini work sabbatical. Best decision I've ever made. 🎋✨ #Kyoto #Japan #SlowTravel #SoloTravel #Wanderlust",date:"MARCH 18, 2025",location:"Arashiyama, Kyoto",likes:6204,comments:[
-  {user:"marco_levi",avatar:AVT.marco,text:"The envy I feel right now is immeasurable. Were you actually ALONE in there?!",time:"10h"},
-  {user:"tom.at.meridian",avatar:AVT.tom,text:"Miss you at the studio Q! Come back with matcha KitKats and all is forgiven 😂",time:"9h"},
-  {user:"ella.ashford",avatar:AVT.ella,text:"I cannot believe you went without me. This looks UNREAL 😭",time:"8h"},
-  {user:"priya.k",avatar:AVT.priya,text:"The flat is so quiet without you honestly 😭 Come home soon",time:"6h"},
-  {user:"sophiatravel",avatar:AVT.sophia,text:"Japan solo is EVERYTHING. Did you make it to Nara?",time:"4h"}
-]},
-{id:8,image:"images/Dog/20220501_164834.jpg", thumb:"images/Dog/20220501_164834.jpg", caption:"Rain or shine, this one demands his walk and honestly it's the best part of my day 🐾🌧️ Fostering has completely changed my morning routine and I am not complaining one bit. #FosterDog #DogWalk #DogLife #LondonPawsRescue #EastLondon", date:"FEBRUARY 14, 2025", location:"Victoria Park, London", likes:2987, comments:[
-  {user:"priya.k", avatar:AVT.priya, text:"He looks SO happy 😭 best boy", time:"9h"},
-  {user:"ella.ashford", avatar:AVT.ella, text:"The rain doesn't even bother him does it 😂🐶", time:"8h"},
-  {user:"marco_levi", avatar:AVT.marco, text:"You and this dog, honestly the best duo 😂🐾", time:"6h"}
-]},
-{id:9,image:"https://images.unsplash.com/photo-1472214103451-9374bd1c798e?w=800&h=800&fit=crop",thumb:"https://images.unsplash.com/photo-1472214103451-9374bd1c798e?w=400&h=400&fit=crop",caption:"Scotland. Nowhere on earth makes me feel so small in the best possible way 🏔️🌿 Taking a few days to recharge before a big push at work. #ScottishHighlands #NatureHeals #SlowTravel #OffGrid",date:"JANUARY 20, 2025",location:"Scottish Highlands",likes:4102,comments:[
-  {user:"marco_levi",avatar:AVT.marco,text:"You and Scotland 😍 This is your third trip up there isn't it?",time:"14h"},
-  {user:"priya.k",avatar:AVT.priya,text:"I miss you but I'm so glad you're getting this time. You needed it 🌿",time:"12h"},
-  {user:"ella.ashford",avatar:AVT.ella,text:"This is literally an hour from where we grew up and you make it look like a postcard 😂",time:"10h"},
-  {user:"tom.at.meridian",avatar:AVT.tom,text:"See you Monday Q! The studio is very dull without you 😅",time:"8h"}
-]},
-{id:10, image:"images/Scotland/IMG_3769.jpg", thumb:"images/Scotland/IMG_3769.jpg", caption:"Back in this city for work and somehow it feels even better the second time around 🏴󠁧󠁢󠁳󠁣󠁴󠁿✨ Managed to sneak out for an hour between meetings and I have zero regrets. #Travel #WorkTrip #Scotland #SlowTravel", date:"NOVEMBER 8, 2024", location:", ", likes:3102, comments:[
-  {user:"priya.k", avatar:AVT.priya, text:"A work trip here?? So jealous, hope you get some time to explore 😍", time:"10h"},
-  {user:"marco_levi", avatar:AVT.marco, text:"Only you could make a work trip look this good 😂✨", time:"9h"},
-  {user:"ella.ashford", avatar:AVT.ella, text:"You're literally always here now 😂 save some of it for me!", time:"8h"},
-  {user:"tom.at.meridian", avatar:AVT.tom, text:"Back in the office tomorrow though right?? 👀😂", time:"6h"}
-]},
-{id:11, image:"images/Cat/IMG_2214.jpg", thumb:"images/Cat/IMG_2214.jpg", caption:"Found her. She has been under here for three hours and is showing absolutely no signs of leaving 🐱😂 This is fine. Everything is fine. #CatsOfInstagram #CatLife #HidingSpot", date:"SEPTEMBER 5, 2024", location:"", likes:2341, comments:[
-  {user:"priya.k", avatar:AVT.priya, text:"The little eyes peering out 😭🐱 I can't handle it", time:"8h"},
-  {user:"marco_levi", avatar:AVT.marco, text:"She looks very comfortable and very unbothered 😂", time:"7h"},
-  {user:"ella.ashford", avatar:AVT.ella, text:"She is SUCH a drama queen I love her 😂🖤", time:"6h"},
-]},
-{id:12, image:"images/Venice/IMG_3215.jpg", thumb:"images/Venice/IMG_3215.jpg", caption:"There is nowhere on earth quite like this place 🇮🇹☀️ Already planning the next trip back. #Italy #Travel #SlowTravel #GoldenHour", date:"MAY 19, 2024", location:"Italy", likes:2108, comments:[
-  {user:"priya.k", avatar:AVT.priya, text:"I am so jealous right now 😭🇮🇹", time:"8h"},
-  {user:"marco_levi", avatar:AVT.marco, text:"The light here is just unreal, stunning shot 😍", time:"7h"},
-  {user:"ella.ashford", avatar:AVT.ella, text:"Italy on my list for next year, looks absolutely gorgeous 🥹", time:"6h"},
-  {user:"yogawithsaoirse", avatar:AVT.saoirse, text:"Dreamy 🌿☀️", time:"4h"}
-]},
-  {id:13,image:"images/Venice/IMG_3220.jpg",thumb:"images/Venice/IMG_3220.jpg",caption:"Done some more exploring #Holiday #Italy #ICantSwim",date:"MAY 19, 2024",location:"",likes:708,comments:[
-  {user:"priya.k",avatar:AVT.priya,text:"SO COOL.",time:"8h"},
-]},
-  {id:14,image:"images/Venice/IMG_3211.jpg",thumb:"images/Venice/IMG_3211.jpg",caption:"Manged to get in before the crowds, it's so quiet!! #Holiday #Italy",date:"MAY 18, 2024",location:"",likes:1084,comments:[
-  {user:"priya.k",avatar:AVT.priya,text:"WOW that looks AMAZING.",time:"8h"},
-  {user:"marco_levi",avatar:AVT.marco,text:"That looks like venice to me, its a lovely place",time:"7h"},
-  {user:"ella.ashford",avatar:AVT.ella,text:"Hope you enjoy your holiday!",time:"6h"},
-  {user:"yogawithsaoirse",avatar:AVT.saoirse,text:"Don't fall in!! 🍃",time:"4h"}
-]},
-  {id:15, image:"images/Dog/IMG_1832.jpg", thumb:"images/Dog/IMG_1832.jpg", caption:"Going to miss him while im on holiday :(", date:"MAY 15, 2024", location:"London, UK", likes:1342, comments:[
-  {user:"priya.k", avatar:AVT.priya, text:"I need to meet this one immediately 😭", time:"5h"},
-  {user:"ella.ashford", avatar:AVT.ella, text:"STOP it, too cute 🥹", time:"4h"},
-  {user:"marco_levi", avatar:AVT.marco, text:"Does this one hate the postman too? 😂", time:"2h"}
-]},
-  {id:16, image:"images/Scotland/IMG_3726.jpg", thumb:"images/Scotland/IMG_3726.jpg", caption:"This city never gets old 🏰✨ Every time I visit I find a new angle to fall in love with. Scotland, you have my whole heart. #Scotland #Travel #SlowTravel #History", date:"APRIL 20, 2024", location:"", likes:2156, comments:[
-  {user:"priya.k", avatar:AVT.priya, text:"This view!! When are we going together?? 😭", time:"8h"},
-  {user:"ella.ashford", avatar:AVT.ella, text:"Grew up so close to here and it still takes my breath away 🏴󠁧󠁢󠁳󠁣󠁴󠁿", time:"7h"},
-  {user:"marco_levi", avatar:AVT.marco, text:"I would never have guessed where this is, stunning photo 😍", time:"5h"},
-  {user:"james_photo", avatar:AVT.james, text:"Incredible shot, what time of day was this taken?", time:"3h"}
-]},
-  {id:17, image:"images/Scotland/IMG_3728.jpg", thumb:"images/Scotland/IMG_3728.jpg", caption:"Got completely lost down this street for about an hour and it was the best thing that could have happened 🏴󠁧󠁢󠁳󠁣󠁴󠁿✨ Some places just have a feeling you can't quite put into words. #Travel #SlowTravel #HiddenGems", date:"APRIL 19, 2024", location:"", likes:1876, comments:[
-  {user:"priya.k", avatar:AVT.priya, text:"Where IS this?! It looks like something out of a film 😍", time:"6h"},
-  {user:"ella.ashford", avatar:AVT.ella, text:"I have a feeling I know exactly where this is 👀", time:"5h"},
-  {user:"marco_levi", avatar:AVT.marco, text:"Quinn you and your mystery locations 😂 just tell us!", time:"4h"},
-  {user:"james_photo", avatar:AVT.james, text:"The light here is gorgeous, love the composition 📸", time:"2h"}
-]},
-  {id:18, image:"images/London/IMG_4738.jpg", thumb:"images/London/IMG_4738.jpg", caption:"Late nights in this city hit different 🌉✨ Never gets old no matter how many times I've seen it. #London #NightPhotography #CityLights", date:"JANUARY 24, 2024", location:"Southbank, London", likes:2934, comments:[
-  {user:"priya.k", avatar:AVT.priya, text:"This was such a good night 🥂 We need to do it again soon!", time:"9h"},
-  {user:"marco_levi", avatar:AVT.marco, text:"The reflections on the water 😍 incredible shot Quinn", time:"8h"},
-  {user:"ella.ashford", avatar:AVT.ella, text:"Living in London and I never do stuff like this anymore 😭 jealous!", time:"6h"},
-  {user:"james_photo", avatar:AVT.james, text:"Night photography in London is unbeatable. What settings were you shooting on? 📸", time:"3h"}
-]},
-  {id:19, image:"images/WH/IMG_3863.jpg", thumb:"images/WH/IMG_3863.jpg", caption:"Finally finished these guys after way too many late nights and far too much gold spray primer 🎨✨ Honestly so happy with how they came out. The hobby is taking over my life and I have zero regrets. #Warhammer #Warhammer40k #Miniatures #MiniaturePainting #Hobbytime", date:"JANUARY 10, 2024", location:"", likes:1247, comments:[
-  {user:"priya.k", avatar:AVT.priya, text:"I have absolutely no idea what these are but they look incredible 😂🎨", time:"7h"},
-  {user:"marco_levi", avatar:AVT.marco, text:"YESSS the gold came out so well!! What paints did you use for the base coat?", time:"6h"},
-  {user:"ella.ashford", avatar:AVT.ella, text:"My brother in law is going to lose his mind when he sees these 😂", time:"5h"},
-  {user:"james_photo", avatar:AVT.james, text:"The detail on these is insane, how long did they take? 👏", time:"3h"}
-]}
-  
-  
+
+/* ── POSTS:2  ── */
+const Page2 = [
+  {id:101,owner:"Ron.Swanson",ownerAvatar:"images/RonSwansonProfilePic.jpg",image:"images/Lagavulin post.jpg",thumb:"images/Lagavulin post.jpg",caption:"Another day, another performance review 📋 At least the view from my desk is... consistent. #DunderMifflin #Scranton #PaperSales",date:"JUNE 2, 2025",location:"Dunder Mifflin, Scranton PA",likes:892,comments:[
+    {user:"pam.beesly",avatar:AVT.pam,text:"You love it really 😂",time:"3h"},
+    {user:"dwight.k.schrute",avatar:AVT.dwight,text:"You are a mediocre salesman, Jim. I said what I said.",time:"2h"},
+    {user:"michael.scott.dm",avatar:AVT.michael,text:"Jim!! My guy!! Best employee in the biz!!",time:"1h"}
+  ]},
+  {id:102,owner:"Ron.Swanson",ownerAvatar:"images/RonSwansonProfilePic.jpg",image:"images/Muligans.jpg",thumb:"images/Muligans.jpg",caption:"Weekend with the family. Couldn't ask for more 🧡 #FamilyFirst #Scranton #WeekendVibes",date:"MAY 25, 2025",location:"Scranton, PA",likes:2104,comments:[
+    {user:"pam.beesly",avatar:AVT.pam,text:"Best weekend 🧡",time:"8h"},
+    {user:"michael.scott.dm",avatar:AVT.michael,text:"CUTE FAMILY ALERT! That's what she said. No wait—",time:"5h"}
+  ]},
+  {id:103,owner:"Ron.Swanson",ownerAvatar:"images/RonSwansonProfilePic.jpg",image:"images/WomanOfTheYear.jpg",thumb:"images/WomanOfTheYear.jpg",caption:"Made Pam breakfast. She said it was 'actually really good this time' which is honestly the best review I've ever received 🍳 #Winning #MarriedLife",date:"MAY 10, 2025",location:"Home",likes:1567,comments:[
+    {user:"pam.beesly",avatar:AVT.pam,text:"I stand by that review 😂 it WAS good",time:"6h"},
+    {user:"dwight.k.schrute",avatar:AVT.dwight,text:"Beet salad is a superior breakfast. This is a fact.",time:"4h"}
+  ]},
+  {id:104,owner:"Ron.Swanson",ownerAvatar:"images/RonSwansonProfilePic.jpg",image:"images/PyramidOfGreatness.jpg",thumb:"images/PyramidOfGreatness.jpg",caption:"Q3 numbers are in. I looked at them briefly then stared out the window for 20 minutes. Productive day. 📊 #Sales #Scranton #ThatsWhatSheSaid",date:"APRIL 18, 2025",location:"Dunder Mifflin, Scranton PA",likes:743,comments:[
+    {user:"michael.scott.dm",avatar:AVT.michael,text:"Jim you are my best friend and also my best employee!!",time:"9h"},
+    {user:"dwight.k.schrute",avatar:AVT.dwight,text:"I, however, have reviewed ALL the Q3 numbers. I am the top salesman. As usual.",time:"7h"},
+    {user:"pam.beesly",avatar:AVT.pam,text:"20 minutes is generous tbh 😂",time:"5h"}
+  ]},
+  {id:105,owner:"Ron.Swanson",ownerAvatar:"images/RonSwansonProfilePic.jpg",image:"images/BaconAndEggs.jpg",thumb:"images/BaconAndEggs.jpg",caption:"Friday lunch tradition 🥪 Some things are sacred. #FridayFeeling #Scranton #Routine",date:"MARCH 28, 2025",location:"Scranton, PA",likes:981,comments:[
+    {user:"pam.beesly",avatar:AVT.pam,text:"You eat the same thing every single Friday 😂",time:"4h"},
+    {user:"michael.scott.dm",avatar:AVT.michael,text:"Jim I love lunch! Can I join? I'll bring my famous chilli!!",time:"2h"}
+  ]},
+  {id:106,owner:"Ron.Swanson",ownerAvatar:"images/RonSwansonProfilePic.jpg",image:"https://images.unsplash.com/photo-1434494878577-86c23bcb06b9?w=800&h=800&fit=crop",thumb:"https://images.unsplash.com/photo-1434494878577-86c23bcb06b9?w=400&h=400&fit=crop",caption:"Morning run before work. New PR. Dwight challenged me to a race and I needed to be prepared. #Running #Scranton #NotTellingDwight",date:"MARCH 14, 2025",location:"Scranton, PA",likes:1388,comments:[
+    {user:"dwight.k.schrute",avatar:AVT.dwight,text:"I KNEW you were training. I have also been training. In secret. For years.",time:"8h"},
+    {user:"pam.beesly",avatar:AVT.pam,text:"He woke up at 5am for this 😂 I married a nerd",time:"6h"}
+  ]}
 ];
-const storiesRow=document.getElementById('storiesRow');
-stories.forEach((story,i)=>{const item=document.createElement('div');item.className='story-item';item.innerHTML=`<div class="story-ring"><div class="story-ring-inner"><img src="${story.cover}" alt="${story.label}" loading="lazy"></div></div><span class="story-label">${story.label}</span>`;item.addEventListener('click',()=>openStory(i));storiesRow.appendChild(item);});
-const grid=document.getElementById('photoGrid');let currentPostIndex=0;
-posts.forEach((post,i)=>{const item=document.createElement('div');item.className='grid-item';item.innerHTML=`<img src="${post.thumb}" alt="post" loading="lazy"><div class="grid-overlay"><div class="overlay-stat"><svg viewBox="0 0 24 24"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/></svg>${post.likes.toLocaleString()}</div><div class="overlay-stat"><svg viewBox="0 0 24 24"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>${post.comments.length}</div></div>`;item.addEventListener('click',()=>openModal(i));grid.appendChild(item);});
-function openModal(i){currentPostIndex=i;renderModal();document.getElementById('modalBackdrop').classList.add('open');document.body.style.overflow='hidden';}
-function closeModal(){document.getElementById('modalBackdrop').classList.remove('open');document.body.style.overflow='';}
-function navigateModal(d){currentPostIndex=(currentPostIndex+d+posts.length)%posts.length;renderModal();}
-function renderModal(){const p=posts[currentPostIndex];document.getElementById('modalImg').src=p.image;document.getElementById('modalCaption').textContent=p.caption;document.getElementById('modalDate').textContent=p.date;document.getElementById('modalLocation').textContent=p.location;document.getElementById('modalLikes').textContent=p.likes.toLocaleString()+' likes';document.getElementById('commentsList').innerHTML=p.comments.map(c=>`<div class="comment"><div class="comment-avatar"><img src="${c.avatar}" alt="${c.user}"></div><div class="comment-content"><div class="comment-username">${c.user}</div><div class="comment-text">${c.text}</div><div class="comment-time">${c.time} ago</div></div></div>`).join('');document.getElementById('modalBackdrop').querySelector('.modal-body').scrollTop=0;}
-function toggleLike(btn){const p=posts[currentPostIndex];const svg=btn.querySelector('svg');if(btn.dataset.liked){p.likes--;svg.style.fill='none';svg.style.stroke='currentColor';delete btn.dataset.liked;}else{p.likes++;svg.style.fill='#9a258f';svg.style.stroke='#9a258f';btn.dataset.liked='1';}document.getElementById('modalLikes').textContent=p.likes.toLocaleString()+' likes';}
-function postComment(){const inp=document.getElementById('commentInput');const txt=inp.value.trim();if(!txt)return;posts[currentPostIndex].comments.push({user:'visitor',avatar:'https://images.unsplash.com/photo-1499714608240-22fc6ad53fb2?w=60&h=60&fit=crop&crop=face',text:txt,time:'just now'});inp.value='';renderModal();setTimeout(()=>{const b=document.getElementById('modalBackdrop').querySelector('.modal-body');b.scrollTop=b.scrollHeight;},50);}
-document.getElementById('modalBackdrop').addEventListener('click',e=>{if(e.target===document.getElementById('modalBackdrop'))closeModal();});
-let aStory=0,aSlide=0,sTimer=null;const SD=4500;
-function openStory(i){aStory=i;aSlide=0;renderStory();document.getElementById('storyBackdrop').classList.add('open');document.body.style.overflow='hidden';startST();}
-function closeStory(){clearST();document.getElementById('storyBackdrop').classList.remove('open');document.body.style.overflow='';}
-function renderStory(){const s=stories[aStory];const sl=s.slides[aSlide];document.getElementById('storyImg').src=sl.image;document.getElementById('storyCaption').textContent=sl.caption;document.getElementById('storyTime').textContent=sl.time;const bar=document.getElementById('storyProgressBar');bar.innerHTML=s.slides.map((_,i)=>`<div class="story-progress-segment"><div class="story-progress-fill${i<aSlide?' done':''}" id="fill-${i}"></div></div>`).join('');const fill=document.getElementById(`fill-${aSlide}`);if(fill)requestAnimationFrame(()=>{fill.style.transition=`width ${SD}ms linear`;fill.style.width='100%';});}
-function startST(){clearST();sTimer=setTimeout(()=>storyNavigate(1),SD);}
-function clearST(){if(sTimer){clearTimeout(sTimer);sTimer=null;}}
-function storyNavigate(d){clearST();const s=stories[aStory];const next=aSlide+d;if(next>=s.slides.length){const ns=aStory+1;if(ns<stories.length){aStory=ns;aSlide=0;}else{closeStory();return;}}else if(next<0){if(aSlide>0){aSlide=0;}else if(aStory>0){aStory--;aSlide=0;}}else{aSlide=next;}renderStory();startST();}
-document.getElementById('storyBackdrop').addEventListener('click',e=>{if(e.target===document.getElementById('storyBackdrop'))closeStory();});
-document.addEventListener('keydown',e=>{const po=document.getElementById('modalBackdrop').classList.contains('open');const so=document.getElementById('storyBackdrop').classList.contains('open');if(po){if(e.key==='Escape')closeModal();if(e.key==='ArrowLeft')navigateModal(-1);if(e.key==='ArrowRight')navigateModal(1);}if(so){if(e.key==='Escape')closeStory();if(e.key==='ArrowLeft')storyNavigate(-1);if(e.key==='ArrowRight')storyNavigate(1);}});
-document.querySelectorAll('.tab').forEach(t=>{t.addEventListener('click',()=>{document.querySelectorAll('.tab').forEach(x=>x.classList.remove('active'));t.classList.add('active');});});
+
+/* ── RENDER STORIES ── */
+const storiesRow = document.getElementById("storiesRow");
+stories.forEach((story, i) => {
+  const item = document.createElement("div");
+  item.className = "story-item";
+  item.innerHTML = `<div class="story-ring"><div class="story-ring-inner"><img src="${story.cover}" alt="${story.label}" loading="lazy"></div></div><span class="story-label">${story.label}</span>`;
+  item.addEventListener("click", () => openStory(i));
+  storiesRow.appendChild(item);
+});
+
+/* ── RENDER MICHAEL'S GRID ── */
+let currentPosts = posts;
+let currentPostIndex = 0;
+
+const grid = document.getElementById("photoGrid");
+posts.forEach((post, i) => {
+  const item = document.createElement("div");
+  item.className = "grid-item";
+  item.innerHTML = `<img src="${post.thumb}" alt="post" loading="lazy"><div class="grid-overlay"><div class="overlay-stat"><svg viewBox="0 0 24 24"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/></svg>${post.likes.toLocaleString()}</div><div class="overlay-stat"><svg viewBox="0 0 24 24"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>${post.comments.length}</div></div>`;
+  item.addEventListener("click", () => { currentPosts = posts; openModal(i); });
+  grid.appendChild(item);
+});
+
+/* ── RENDER JIM'S GRID ── */
+const Grid2 = document.getElementById("Grid2");
+Page2.forEach((post, i) => {
+  const item = document.createElement("div");
+  item.className = "grid-item";
+  item.innerHTML = `<img src="${post.thumb}" alt="post" loading="lazy"><div class="grid-overlay"><div class="overlay-stat"><svg viewBox="0 0 24 24"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/></svg>${post.likes.toLocaleString()}</div><div class="overlay-stat"><svg viewBox="0 0 24 24"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>${post.comments.length}</div></div>`;
+  item.addEventListener("click", () => { currentPosts = Page2; openModal(i); });
+  Grid2.appendChild(item);
+});
+
+/* ── MODAL ── */
+function openModal(i) {
+  currentPostIndex = i;
+  renderModal();
+  document.getElementById("modalBackdrop").classList.add("open");
+  document.body.style.overflow = "hidden";
+}
+function closeModal() {
+  document.getElementById("modalBackdrop").classList.remove("open");
+  document.body.style.overflow = "";
+}
+function navigateModal(d) {
+  currentPostIndex = (currentPostIndex + d + currentPosts.length) % currentPosts.length;
+  renderModal();
+}
+function renderModal() {
+  const p = currentPosts[currentPostIndex];
+  document.getElementById("modalImg").src = p.image;
+  document.getElementById("modalCaption").textContent = p.caption;
+  document.getElementById("modalDate").textContent = p.date;
+  document.getElementById("modalLocation").textContent = p.location;
+  document.getElementById("modalLikes").textContent = p.likes.toLocaleString() + " likes";
+  document.getElementById("modalUser").textContent = p.owner;
+  document.getElementById("modalCaptionUser").textContent = p.owner;
+  document.getElementById("modalAvatarImg").src = p.ownerAvatar;
+  document.getElementById("commentsList").innerHTML = p.comments.map(c =>
+    `<div class="comment"><div class="comment-avatar"><img src="${c.avatar}" alt="${c.user}"></div><div class="comment-content"><div class="comment-username">${c.user}</div><div class="comment-text">${c.text}</div><div class="comment-time">${c.time} ago</div></div></div>`
+  ).join("");
+  document.getElementById("modalBackdrop").querySelector(".modal-body").scrollTop = 0;
+}
+function toggleLike(btn) {
+  const p = currentPosts[currentPostIndex];
+  const svg = btn.querySelector("svg");
+  if (btn.dataset.liked) {
+    p.likes--;
+    svg.style.fill = "none";
+    svg.style.stroke = "currentColor";
+    delete btn.dataset.liked;
+  } else {
+    p.likes++;
+    svg.style.fill = "#9a258f";
+    svg.style.stroke = "#9a258f";
+    btn.dataset.liked = "1";
+  }
+  document.getElementById("modalLikes").textContent = p.likes.toLocaleString() + " likes";
+}
+function postComment() {
+  const inp = document.getElementById("commentInput");
+  const txt = inp.value.trim();
+  if (!txt) return;
+  currentPosts[currentPostIndex].comments.push({
+    user: "visitor",
+    avatar: "https://images.unsplash.com/photo-1499714608240-22fc6ad53fb2?w=60&h=60&fit=crop&crop=face",
+    text: txt,
+    time: "just now"
+  });
+  inp.value = "";
+  renderModal();
+  setTimeout(() => {
+    const b = document.getElementById("modalBackdrop").querySelector(".modal-body");
+    b.scrollTop = b.scrollHeight;
+  }, 50);
+}
+document.getElementById("modalBackdrop").addEventListener("click", e => {
+  if (e.target === document.getElementById("modalBackdrop")) closeModal();
+});
+
+/* ── STORIES ── */
+let aStory = 0, aSlide = 0, sTimer = null;
+const SD = 4500;
+function openStory(i) { aStory = i; aSlide = 0; renderStory(); document.getElementById("storyBackdrop").classList.add("open"); document.body.style.overflow = "hidden"; startST(); }
+function closeStory() { clearST(); document.getElementById("storyBackdrop").classList.remove("open"); document.body.style.overflow = ""; }
+function renderStory() {
+  const s = stories[aStory];
+  const sl = s.slides[aSlide];
+  document.getElementById("storyImg").src = sl.image;
+  document.getElementById("storyCaption").textContent = sl.caption;
+  document.getElementById("storyTime").textContent = sl.time;
+  const bar = document.getElementById("storyProgressBar");
+  bar.innerHTML = s.slides.map((_, i) =>
+    `<div class="story-progress-segment"><div class="story-progress-fill${i < aSlide ? " done" : ""}" id="fill-${i}"></div></div>`
+  ).join("");
+  const fill = document.getElementById(`fill-${aSlide}`);
+  if (fill) requestAnimationFrame(() => { fill.style.transition = `width ${SD}ms linear`; fill.style.width = "100%"; });
+}
+function startST() { clearST(); sTimer = setTimeout(() => storyNavigate(1), SD); }
+function clearST() { if (sTimer) { clearTimeout(sTimer); sTimer = null; } }
+function storyNavigate(d) {
+  clearST();
+  const s = stories[aStory];
+  const next = aSlide + d;
+  if (next >= s.slides.length) {
+    const ns = aStory + 1;
+    if (ns < stories.length) { aStory = ns; aSlide = 0; }
+    else { closeStory(); return; }
+  } else if (next < 0) {
+    if (aSlide > 0) { aSlide = 0; }
+    else if (aStory > 0) { aStory--; aSlide = 0; }
+  } else { aSlide = next; }
+  renderStory();
+  startST();
+}
+document.getElementById("storyBackdrop").addEventListener("click", e => {
+  if (e.target === document.getElementById("storyBackdrop")) closeStory();
+});
+
+/* ── TABS ── */
+document.querySelectorAll("#mainPage .tab").forEach(t => {
+  t.addEventListener("click", () => {
+    document.querySelectorAll("#mainPage .tab").forEach(x => x.classList.remove("active"));
+    t.classList.add("active");
+  });
+});
+function jimTabClick(t) {
+  document.querySelectorAll("#jimPage .tab").forEach(x => x.classList.remove("active"));
+  t.classList.add("active");
+}
+
+/* ── KEYBOARD NAV ── */
+document.addEventListener("keydown", e => {
+  const po = document.getElementById("modalBackdrop").classList.contains("open");
+  const so = document.getElementById("storyBackdrop").classList.contains("open");
+  if (po) {
+    if (e.key === "Escape") closeModal();
+    if (e.key === "ArrowLeft") navigateModal(-1);
+    if (e.key === "ArrowRight") navigateModal(1);
+  }
+  if (so) {
+    if (e.key === "Escape") closeStory();
+    if (e.key === "ArrowLeft") storyNavigate(-1);
+    if (e.key === "ArrowRight") storyNavigate(1);
+  }
+});
 </script>
 </body>
 </html>
